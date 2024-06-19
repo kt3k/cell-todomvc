@@ -1,4 +1,4 @@
-# [Cell][Cell] • [TodoMVC](http://todomvc.com) WIP
+# [Cell][Cell] • [TodoMVC](http://todomvc.com)
 
 ![test](https://github.com/capsidjs/capsule-todomvc/workflows/test/badge.svg)
 
