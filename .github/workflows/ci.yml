@@ -6,12 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
-        with:
-          node-version: '16.x'
       - uses: denoland/setup-deno@v1
-        with:
-          node-version: '1.x'
-      - run: make fmt-check
-      - run: |
-          yarn
-          yarn test
+      - run: deno fmt --check
+      - run: npm install
+      - run: npm test
