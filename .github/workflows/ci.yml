@@ -6,6 +6,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
+        with:
+          node-version: 20
       - uses: denoland/setup-deno@v1
       - run: deno fmt --check
       - run: npm install
