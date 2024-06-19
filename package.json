@@ -12,7 +12,7 @@
     "fmt": "prettier --single-quote --write src cypress index.html"
   },
   "dependencies": {
-    "@kt3k/capsule": "^0.5.1",
+    "@kt3k/cell": "npm:@jsr/kt3k__cell@^0.1.4",
     "todomvc-app-css": "^2.3.0",
     "todomvc-common": "^1.0.5"
   },
