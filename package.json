@@ -2,25 +2,16 @@
   "private": true,
   "name": "cell-todomvc",
   "description": "TodoMVC of Cell",
-  "main": "index.js",
   "scripts": {
     "test": "start-server-and-test start http://localhost:8000 'cypress run'",
-    "clean": "rimraf docs",
-    "start": "parcel --port 8000 index.html",
-    "build": "parcel build --public-url . --out-dir docs index.html",
-    "dist": "npm run clean && npm run build && cp learn.json docs/",
-    "fmt": "prettier --single-quote --write src cypress index.html"
+    "start": "deno task start"
   },
   "dependencies": {
-    "@kt3k/cell": "npm:@jsr/kt3k__cell@^0.1.4",
     "todomvc-app-css": "^2.3.0",
     "todomvc-common": "^1.0.5"
   },
   "devDependencies": {
     "cypress": "^6.0.0",
-    "parcel-bundler": "^1.12.4",
-    "rimraf": "^5.0.7",
-    "start-server-and-test": "^2.0.4",
-    "typescript": "^5.4.5"
+    "start-server-and-test": "^2.0.4"
   }
 }

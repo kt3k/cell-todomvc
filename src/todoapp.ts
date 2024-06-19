@@ -1,5 +1,5 @@
-import { type Context, register } from "@kt3k/cell";
-import { Todo, TodoCollection } from "./todo-models";
+import { type Context, register } from "jsr:@kt3k/cell";
+import { Todo, TodoCollection } from "./todo-models.ts";
 
 type Filter = "all" | "completed" | "uncompleted";
 
@@ -10,7 +10,7 @@ let filter: Filter = "all";
 register(TodoApp, "todoapp");
 
 function TodoApp({ el, on, query }: Context) {
-  el.dataset.framework = "capsule";
+  el.dataset.framework = "cell";
   const todos = TodoCollection.restore();
   id = todos.maxId() + 1;
 

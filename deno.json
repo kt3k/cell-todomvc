@@ -1,6 +1,9 @@
 {
   "tasks": {
-    "size": "npm run dist && deno run --allow-read https://deno.land/x/gzip_size@v0.3.0/cli.ts --include-original docs/todoapp.*.js"
+    "start": "deno run -A jsr:@std/http/file-server -p 8000",
+    "dist": "deno run -A jsr:@kt3k/pack -o dist/todoapp.js src/todoapp.ts",
+    "min": "deno run -A npm:terser --compress --mangle --toplevel -o dist/todoapp.min.js -- dist/todoapp.js",
+    "size": "deno task dist && deno task min && deno run --allow-read https://deno.land/x/gzip_size@v0.3.0/cli.ts --include-original dist/todoapp.min.js"
   },
   "compilerOptions": {
     "lib": [
@@ -9,8 +12,7 @@
     ]
   },
   "exclude": [
-    ".cache",
-    "docs"
+    "dist"
   ],
   "unstable": [
     "sloppy-imports"

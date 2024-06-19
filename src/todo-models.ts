@@ -11,7 +11,7 @@ export class Todo {
   }
 }
 
-const KEY = "capsule-todomvc";
+const KEY = "cell-todomvc";
 
 /** TodoCollection represents a collection of Todos. */
 export class TodoCollection {
