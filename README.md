@@ -1,6 +1,6 @@
 # [Cell][Cell] • [TodoMVC](http://todomvc.com)
 
-![test](https://github.com/capsidjs/capsule-todomvc/workflows/test/badge.svg)
+[![test](https://github.com/kt3k/cell-todomvc/actions/workflows/ci.yml/badge.svg)](https://github.com/kt3k/cell-todomvc/actions/workflows/ci.yml)
 
 Spec compliant TodoMVC implementation in [Cell][Cell].
 
