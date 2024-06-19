@@ -1,27 +1,24 @@
 {
-  "capsule": {
-    "name": "Capsule",
+  "cell": {
+    "name": "Cell",
     "description": "Event-driven DOM programming in a new style",
-    "homepage": "https://github.com/capsidjs/capsule",
+    "homepage": "https://github.com/kt3k/cell",
     "examples": [{
       "name": "TodoMVC",
-      "url": "https://capsidjs.github.io/capsule-todomvc",
-      "source_url": "../../../../capsidjs/capsule-todomvc"
+      "url": "https://kt3k.github.io/cell-todomvc",
+      "source_url": "../../../../kt3k/cell-todomvc"
     }],
     "link_groups": [{
       "heading": "Links",
       "links": [{
         "name": "Homepage",
-        "url": "https://github.com/capsidjs/capsule"
+        "url": "https://github.com/kt3k/cell"
       }, {
         "name": "Live examples",
-        "url": "https://capsule.deno.dev/"
+        "url": "https://kt3k.github.io/cell"
       }, {
-        "name": "npm module",
-        "url": "https://npm.im/@kt3k/capsule"
-      }, {
-        "name": "deno.land/x/capsule",
-        "url": "https://deno.land/x/capsule"
+        "name": "JSR module",
+        "url": "https://jsr.io/@kt3k/cell"
       }]
     }]
   },

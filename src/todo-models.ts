@@ -17,7 +17,7 @@ const KEY = "capsule-todomvc";
 export class TodoCollection {
   constructor(public todos: Todo[] = []) {}
 
-  getById(id: string): Todo | null {
+  getById(id: string): Todo | undefined {
     return this.todos.find((todo) => todo.id === id);
   }
 
@@ -68,7 +68,13 @@ export class TodoCollection {
   static fromJson(json: string) {
     return new TodoCollection(
       JSON.parse(json).map(
-        ({ id, title, completed }) => new Todo(id, title, completed),
+        (
+          { id, title, completed }: {
+            id: string;
+            title: string;
+            completed: boolean;
+          },
+        ) => new Todo(id, title, completed),
       ),
     );
   }
