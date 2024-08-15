@@ -3,16 +3,15 @@ import { Todo, TodoCollection } from "./todo-models.ts";
 
 type Filter = "all" | "completed" | "uncompleted";
 
-let id = 0;
-/** The current filter */
-let filter: Filter = "all";
-
 register(TodoApp, "todoapp");
 
 function TodoApp({ el, on, query }: Context) {
   el.dataset.framework = "cell";
   const todos = TodoCollection.restore();
-  id = todos.maxId() + 1;
+  // The id of the next todo item
+  let id = todos.maxId() + 1;
+  // The current filter
+  let filter: Filter = "all";
 
   globalThis.onhashchange = () => {
     onChangeFilter();
