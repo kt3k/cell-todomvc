@@ -2,6 +2,8 @@
   "version": "3",
   "packages": {
     "specifiers": {
+      "jsr:@kt3k/cell": "jsr:@kt3k/cell@0.3.6",
+      "jsr:@kt3k/signal@^0.1.6": "jsr:@kt3k/signal@0.1.6",
       "npm:cypress@^6.0.0": "npm:cypress@6.9.1",
       "npm:start-server-and-test@2.0.4": "npm:start-server-and-test@2.0.4",
       "npm:start-server-and-test@^2.0.4": "npm:start-server-and-test@2.0.4",
@@ -9,6 +11,17 @@
       "npm:terser": "npm:terser@5.31.1",
       "npm:todomvc-app-css@^2.3.0": "npm:todomvc-app-css@2.4.3",
       "npm:todomvc-common@^1.0.5": "npm:todomvc-common@1.0.5"
+    },
+    "jsr": {
+      "@kt3k/cell@0.3.6": {
+        "integrity": "56bbb4b5395dee15e723f3792e821810a1ef51d15b7e5fda976d21f2697c7eea",
+        "dependencies": [
+          "jsr:@kt3k/signal@^0.1.6"
+        ]
+      },
+      "@kt3k/signal@0.1.6": {
+        "integrity": "e9351a127d2977f6e9469c884fd5289592a4766a09974ae5e84d6ce501abc10f"
+      }
     },
     "npm": {
       "@colors/colors@1.5.0": {

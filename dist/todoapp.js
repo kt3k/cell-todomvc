@@ -1,9 +1,8 @@
-// https://jsr.io/@kt3k/cell/0.1.3/util.ts
+// https://jsr.io/@kt3k/cell/0.3.6/util.ts
 var READY_STATE_CHANGE = "readystatechange";
 var p;
-function documentReady() {
-  return p = p || new Promise((resolve) => {
-    const doc = document;
+function documentReady(doc = document) {
+  p ??= new Promise((resolve) => {
     const checkReady = () => {
       if (doc.readyState === "complete") {
         resolve();
@@ -13,6 +12,7 @@ function documentReady() {
     doc.addEventListener(READY_STATE_CHANGE, checkReady);
     checkReady();
   });
+  return p;
 }
 var boldColor = (color) => `color: ${color}; font-weight: bold;`;
 var defaultEventColor = "#f012be";
@@ -25,6 +25,8 @@ function logEvent({
   if (typeof __DEV__ === "boolean" && !__DEV__)
     return;
   const event = e.type;
+  if (typeof DEBUG_IGNORE === "object" && DEBUG_IGNORE?.has(event))
+    return;
   console.groupCollapsed(
     `${module}> %c${event}%c on %c${component}`,
     boldColor(color || defaultEventColor),
@@ -38,7 +40,7 @@ function logEvent({
   console.groupEnd();
 }
 
-// https://jsr.io/@kt3k/cell/0.1.3/mod.ts
+// https://jsr.io/@kt3k/cell/0.3.6/mod.ts
 var registry = {};
 function assert(assertion, message) {
   if (!assertion) {
@@ -66,100 +68,92 @@ function register(component, name) {
     if (!el.classList.contains(initClass)) {
       el.classList.add(name);
       el.classList.add(initClass);
-      el.addEventListener(`__ummount__:${name}`, () => {
+      el.addEventListener(`__unmount__:${name}`, () => {
         el.classList.remove(initClass);
       }, { once: true });
-      const on = new Proxy(() => {
-      }, {
-        // simple event handler (like on.click = (e) => {})
-        set(_, type, value) {
-          addEventListener(name, el, type, value);
-          return true;
-        },
-        get(_, outside) {
-          if (outside === "outside") {
-            return new Proxy({}, {
-              set(_2, type, value) {
-                assert(
-                  typeof value === "function",
-                  `Event handler must be a function, ${typeof value} (${value}) is given`
-                );
-                const listener = (e) => {
-                  if (el !== e.target && !el.contains(e.target)) {
-                    logEvent({
-                      module: "outside",
-                      color: "#39cccc",
-                      e,
-                      component: name
-                    });
-                    value(e);
-                  }
-                };
-                document.addEventListener(type, listener);
-                el.addEventListener(`__unmount__:${name}`, () => {
-                  document.removeEventListener(type, listener);
-                }, { once: true });
-                return true;
-              }
-            });
-          }
-          return null;
-        },
-        // event delegation handler (like on(".button").click = (e) => {}))
-        apply(_target, _thisArg, args) {
-          const selector = args[0];
-          assert(
-            typeof selector === "string",
-            "Delegation selector must be a string. ${typeof selector} is given."
-          );
-          return new Proxy({}, {
-            set(_, type, value) {
-              addEventListener(
-                name,
-                el,
-                type,
-                // deno-lint-ignore no-explicit-any
-                value,
-                selector
-              );
-              return true;
-            }
-          });
+      const on = (type, selector, options, handler) => {
+        if (typeof selector === "function") {
+          handler = selector;
+          selector = void 0;
+          options = void 0;
+        } else if (typeof options === "function" && typeof selector === "string") {
+          handler = options;
+          options = void 0;
+        } else if (typeof options === "function" && typeof selector === "object") {
+          handler = options;
+          options = selector;
+          selector = void 0;
         }
-      });
-      const pub = (type, data) => {
-        document.querySelectorAll(`.sub\\:${type}`).forEach((el2) => {
-          el2.dispatchEvent(
-            new CustomEvent(type, { bubbles: false, detail: data })
+        if (typeof handler !== "function") {
+          throw new Error(
+            `Cannot add event listener: The handler must be a function, but ${typeof handler} is given`
           );
-        });
+        }
+        addEventListener(name, el, type, handler, selector, options);
       };
-      const sub = (type) => el.classList.add(`sub:${type}`);
+      const onOutside = (type, handler) => {
+        assertEventType(type);
+        assertEventHandler(handler);
+        const listener = (e) => {
+          if (el !== e.target && !el.contains(e.target)) {
+            logEvent({
+              module: "outside",
+              color: "#39cccc",
+              e,
+              component: name
+            });
+            handler(e);
+          }
+        };
+        document.addEventListener(type, listener);
+        el.addEventListener(`__unmount__:${name}`, () => {
+          document.removeEventListener(type, listener);
+        }, { once: true });
+      };
       const context = {
         el,
         on,
-        pub,
-        sub,
+        onOutside,
         query: (s) => el.querySelector(s),
         queryAll: (s) => el.querySelectorAll(s)
       };
       const html = component(context);
       if (typeof html === "string") {
         el.innerHTML = html;
+      } else if (html && typeof html.then === "function") {
+        html.then((html2) => {
+          if (typeof html2 === "string") {
+            el.innerHTML = html2;
+          }
+        });
       }
     }
   };
   initializer.sel = `.${name}:not(.${initClass})`;
   registry[name] = initializer;
-  documentReady().then(() => {
-    mount(name);
-  });
+  if (document.readyState === "complete") {
+    mount();
+  } else {
+    documentReady().then(() => {
+      mount(name);
+    });
+  }
 }
-function addEventListener(name, el, type, handler, selector) {
+function assertEventHandler(handler) {
   assert(
     typeof handler === "function",
-    `Event handler must be a function, ${typeof handler} (${handler}) is given`
+    `Cannot add an event listener: The event handler must be a function, ${typeof handler} (${handler}) is given`
   );
+}
+function assertEventType(type) {
+  assert(
+    typeof type === "string",
+    `Cannot add an event listener: The event type must be a string, ${typeof type} (${type}) is given`
+  );
+}
+function addEventListener(name, el, type, handler, selector, options) {
+  assertEventType(type);
+  assertEventHandler(handler);
   const listener = (e) => {
     if (!selector || [].some.call(
       el.querySelectorAll(selector),
@@ -175,9 +169,9 @@ function addEventListener(name, el, type, handler, selector) {
     }
   };
   el.addEventListener(`__unmount__:${name}`, () => {
-    el.removeEventListener(type, listener);
+    el.removeEventListener(type, listener, options);
   }, { once: true });
-  el.addEventListener(type, listener);
+  el.addEventListener(type, listener, options);
 }
 function mount(name, el) {
   let classNames;
@@ -188,6 +182,7 @@ function mount(name, el) {
     classNames = [name];
   }
   classNames.map((className) => {
+    ;
     [].map.call(
       (el || document).querySelectorAll(registry[className].sel),
       registry[className]
@@ -197,8 +192,8 @@ function mount(name, el) {
 
 // src/todo-models.ts
 var Todo = class {
-  constructor(id2, title, completed) {
-    this.id = id2;
+  constructor(id, title, completed) {
+    this.id = id;
     this.title = title;
     this.completed = completed;
   }
@@ -211,8 +206,8 @@ var TodoCollection = class _TodoCollection {
   constructor(todos = []) {
     this.todos = todos;
   }
-  getById(id2) {
-    return this.todos.find((todo) => todo.id === id2);
+  getById(id) {
+    return this.todos.find((todo) => todo.id === id);
   }
   remove(toRemove) {
     this.todos = this.todos.filter((todo) => todo.id !== toRemove.id);
@@ -251,7 +246,7 @@ var TodoCollection = class _TodoCollection {
   static fromJson(json) {
     return new _TodoCollection(
       JSON.parse(json).map(
-        ({ id: id2, title, completed }) => new Todo(id2, title, completed)
+        ({ id, title, completed }) => new Todo(id, title, completed)
       )
     );
   }
@@ -267,20 +262,19 @@ var TodoCollection = class _TodoCollection {
 };
 
 // src/todoapp.ts
-var id = 0;
-var filter = "all";
 register(TodoApp, "todoapp");
 function TodoApp({ el, on, query }) {
   el.dataset.framework = "cell";
   const todos = TodoCollection.restore();
-  id = todos.maxId() + 1;
+  let id = todos.maxId() + 1;
+  let filter = "all";
   globalThis.onhashchange = () => {
     onChangeFilter();
   };
   onChangeFilter();
   query(".new-todo").focus();
   updateTodo();
-  on(".new-todo").keypress = (e) => {
+  on("keypress", ".new-todo", (e) => {
     if (e.which !== 13) {
       return;
     }
@@ -292,41 +286,41 @@ function TodoApp({ el, on, query }) {
     newInput.value = "";
     todos.add(new Todo(`${id++}`, title, false));
     updateTodo();
-  };
-  on(".toggle").click = (e) => {
+  });
+  on("click", ".toggle", (e) => {
     todos.getById(e.target.parentElement.parentElement.id)?.toggle();
     updateTodo();
-  };
-  on(".toggle-all").click = (e) => {
+  });
+  on("click", ".toggle-all", (e) => {
     if (e.target.checked) {
       todos.completeAll();
     } else {
       todos.uncompleteAll();
     }
     updateTodo();
-  };
-  on(".destroy").click = (e) => {
+  });
+  on("click", ".destroy", (e) => {
     const toRemove = todos.getById(
       e.target.parentElement.parentElement.id
     );
     todos.remove(toRemove);
     updateTodo();
-  };
-  on(".clear-completed").click = () => {
+  });
+  on("click", ".clear-completed", () => {
     todos.completed().forEach((todo) => {
       todos.remove(todo);
     });
     updateTodo();
-  };
-  on(".todo > .view > label").dblclick = (e) => {
+  });
+  on("dblclick", ".todo > .view > label", (e) => {
     const todoItem = e.target.parentElement.parentElement;
     const todo = todos.getById(todoItem.id);
     todoItem.classList.add("editing");
     const editInput = todoItem.querySelector(".edit");
     editInput.value = todo.title;
     editInput.focus();
-  };
-  on(".edit").keypress = on(".edit").keydown = (e) => {
+  });
+  const onEdit = (e) => {
     const input = e.target;
     if (e.which === 13) {
       input.blur();
@@ -335,7 +329,9 @@ function TodoApp({ el, on, query }) {
       input.blur();
     }
   };
-  on(".edit").focusout = (e) => {
+  on("keypress", ".edit", onEdit);
+  on("keydown", ".edit", onEdit);
+  on("focusout", ".edit", (e) => {
     const input = e.target;
     const value = input.value.trim();
     const todoItem = input.parentElement;
@@ -347,7 +343,7 @@ function TodoApp({ el, on, query }) {
       todoItem.classList.remove("editing");
     }
     updateTodo();
-  };
+  });
   function onChangeFilter() {
     const { hash } = location;
     if (hash === "#/active") {
@@ -418,4 +414,4 @@ function TodoApp({ el, on, query }) {
     }
   }
 }
-/*! Cell v0.1.3 | Copyright 2024 Yoshiya Hinosawa and Capsule contributors | MIT license */
+/*! Cell v0.3.6 | Copyright 2024 Yoshiya Hinosawa and Capsule contributors | MIT license */
