@@ -20,9 +20,8 @@ function TodoApp({ el, on, query }: Context) {
   query<HTMLInputElement>(".new-todo")!.focus();
   updateTodo();
 
-  on(".new-todo").keypress = (e) => {
-    // deno-lint-ignore no-explicit-any
-    if ((e as any).which !== 13) {
+  on("keypress", ".new-todo", (e) => {
+    if (e.which !== 13) {
       // If not a Enter, ignore the event
       return;
     }
@@ -35,58 +34,62 @@ function TodoApp({ el, on, query }: Context) {
     newInput.value = "";
     todos.add(new Todo(`${id++}`, title, false));
     updateTodo();
-  };
+  });
 
-  on(".toggle").click = (e) => {
+  on("click", ".toggle", (e) => {
     todos.getById((e.target as Element).parentElement!.parentElement!.id)
       ?.toggle();
     updateTodo();
-  };
+  });
 
-  on(".toggle-all").click = (e) => {
+  on("click", ".toggle-all", (e) => {
     if ((e.target as any).checked) {
       todos.completeAll();
     } else {
       todos.uncompleteAll();
     }
     updateTodo();
-  };
+  });
 
-  on(".destroy").click = (e) => {
+  on("click", ".destroy", (e) => {
     const toRemove = todos.getById(
       (e.target as Element).parentElement!.parentElement!.id,
     )!;
     todos.remove(toRemove);
     updateTodo();
-  };
+  });
 
-  on(".clear-completed").click = () => {
+  on("click", ".clear-completed", () => {
     todos.completed().forEach((todo) => {
       todos.remove(todo);
     });
     updateTodo();
-  };
+  });
 
-  on(".todo > .view > label").dblclick = (e) => {
+  on("dblclick", ".todo > .view > label", (e: MouseEvent) => {
     const todoItem = (e.target as Element).parentElement!.parentElement!;
     const todo = todos.getById(todoItem.id)!;
     todoItem.classList.add("editing");
     const editInput = todoItem.querySelector<HTMLInputElement>(".edit")!;
     editInput.value = todo.title;
     editInput.focus();
-  };
+  });
 
-  on(".edit").keypress = on(".edit").keydown = (e) => {
+  const onEdit = (e: KeyboardEvent) => {
+    // deno-lint-ignore no-explicit-any
     const input: HTMLInputElement = e.target as any;
-    if ((e as any).which === 13 /* ENTER */) {
+    if (e.which === 13 /* ENTER */) {
       input.blur();
-    } else if ((e as any).which === 27 /* ESC */) {
+    } else if (e.which === 27 /* ESC */) {
       input.value = todos.getById(input.parentElement!.id)!.title;
       input.blur();
     }
   };
 
-  on(".edit").focusout = (e) => {
+  on("keypress", ".edit", onEdit);
+  on("keydown", ".edit", onEdit);
+
+  on("focusout", ".edit", (e) => {
     const input = e.target as HTMLInputElement;
     const value = input.value.trim();
     const todoItem = input.parentElement!;
@@ -98,7 +101,7 @@ function TodoApp({ el, on, query }: Context) {
       todoItem.classList.remove("editing");
     }
     updateTodo();
-  };
+  });
 
   function onChangeFilter() {
     const { hash } = location;

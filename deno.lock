@@ -3,6 +3,7 @@
   "packages": {
     "specifiers": {
       "npm:cypress@^6.0.0": "npm:cypress@6.9.1",
+      "npm:start-server-and-test@2.0.4": "npm:start-server-and-test@2.0.4",
       "npm:start-server-and-test@^2.0.4": "npm:start-server-and-test@2.0.4",
       "npm:superjson@1.13.3": "npm:superjson@1.13.3",
       "npm:terser": "npm:terser@5.31.1",
