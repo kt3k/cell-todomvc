@@ -16,5 +16,10 @@
   ],
   "unstable": [
     "sloppy-imports"
-  ]
+  ],
+  "fmt": {
+    "options": {
+      "semiColons": false
+    }
+  }
 }
