@@ -1,4 +1,4 @@
-// https://jsr.io/@kt3k/cell/0.3.6/util.ts
+// https://jsr.io/@kt3k/cell/0.7.7/util.ts
 var READY_STATE_CHANGE = "readystatechange";
 var p;
 function documentReady(doc = document) {
@@ -40,7 +40,7 @@ function logEvent({
   console.groupEnd();
 }
 
-// https://jsr.io/@kt3k/cell/0.3.6/mod.ts
+// https://jsr.io/@kt3k/cell/0.7.7/mod.ts
 var registry = {};
 function assert(assertion, message) {
   if (!assertion) {
@@ -66,11 +66,12 @@ function register(component, name) {
   const initClass = `${name}-\u{1F48A}`;
   const initializer = (el) => {
     if (!el.classList.contains(initClass)) {
+      const onUnmount = (handler) => {
+        el.addEventListener(`__unmount__:${name}`, handler, { once: true });
+      };
       el.classList.add(name);
       el.classList.add(initClass);
-      el.addEventListener(`__unmount__:${name}`, () => {
-        el.classList.remove(initClass);
-      }, { once: true });
+      onUnmount(() => el.classList.remove(initClass));
       const on = (type, selector, options, handler) => {
         if (typeof selector === "function") {
           handler = selector;
@@ -106,16 +107,19 @@ function register(component, name) {
           }
         };
         document.addEventListener(type, listener);
-        el.addEventListener(`__unmount__:${name}`, () => {
-          document.removeEventListener(type, listener);
-        }, { once: true });
+        onUnmount(() => document.removeEventListener(type, listener));
+      };
+      const subscribe = (signal, handler) => {
+        onUnmount(signal.subscribe(handler));
       };
       const context = {
         el,
         on,
         onOutside,
+        onUnmount,
         query: (s) => el.querySelector(s),
-        queryAll: (s) => el.querySelectorAll(s)
+        queryAll: (s) => el.querySelectorAll(s),
+        subscribe
       };
       const html = component(context);
       if (typeof html === "string") {
@@ -131,6 +135,8 @@ function register(component, name) {
   };
   initializer.sel = `.${name}:not(.${initClass})`;
   registry[name] = initializer;
+  if (!globalThis.document)
+    return;
   if (document.readyState === "complete") {
     mount();
   } else {
@@ -414,4 +420,4 @@ function TodoApp({ el, on, query }) {
     }
   }
 }
-/*! Cell v0.3.6 | Copyright 2024 Yoshiya Hinosawa and Capsule contributors | MIT license */
+/*! Cell v0.7.7 | Copyright 2022-2024 Yoshiya Hinosawa and Capsule contributors | MIT license */
