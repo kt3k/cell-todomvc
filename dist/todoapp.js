@@ -196,6 +196,26 @@ function mount(name, el) {
   });
 }
 
+// https://jsr.io/@kt3k/ht/0.1.2/mod.ts
+function li(template, ...values) {
+  return createElement("li", template, ...values);
+}
+function createElement(tagName, template, ...values) {
+  const el = document.createElement(tagName);
+  if (Array.isArray(template)) {
+    el.innerHTML = String.raw(template, ...values).trim();
+  } else {
+    const html = values[0];
+    if (typeof html === "string") {
+      el.innerHTML = html;
+    }
+    for (const [key, value] of Object.entries(template)) {
+      el.setAttribute(key, value);
+    }
+  }
+  return el;
+}
+
 // src/todo-models.ts
 var Todo = class {
   constructor(id, title, completed) {
@@ -394,28 +414,29 @@ function TodoApp({ el, on, query }) {
     );
     if (filter === "all" && todos.length === todoList.children.length) {
       todos.forEach((todo) => {
-        const li = todoList.querySelector(`[id="${todo.id}"]`);
-        li.classList.toggle("completed", todo.completed);
-        li.querySelector("label").textContent = todo.title;
-        li.querySelector(".toggle").checked = todo.completed;
+        const li2 = todoList.querySelector(`[id="${todo.id}"]`);
+        li2.classList.toggle("completed", todo.completed);
+        li2.querySelector("label").textContent = todo.title;
+        li2.querySelector(".toggle").checked = todo.completed;
       });
     } else {
       const visibleItems = filter === "uncompleted" ? uncompleted : filter === "completed" ? completed : todos;
       todoList.innerHTML = "";
       visibleItems.forEach((todo) => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-        <div class="view">
-          <input class="toggle" type="checkbox" ${todo.completed ? "checked" : ""}/>
-          <label>${todo.title}</label>
-          <button class="destroy"></button>
-        </div>
-        <input class="edit" type="text" />
-      `;
-        li.id = todo.id;
-        li.classList.add("todo");
-        li.classList.toggle("completed", todo.completed);
-        todoList.appendChild(li);
+        const checked = todo.completed ? "checked" : "";
+        const li2 = li(
+          { id: todo.id, class: "todo" },
+          `
+            <div class="view">
+              <input class="toggle" type="checkbox" ${checked}/>
+              <label>${todo.title}</label>
+              <button class="destroy"></button>
+            </div>
+            <input class="edit" type="text" />
+          `
+        );
+        li2.classList.toggle("completed", todo.completed);
+        todoList.appendChild(li2);
       });
     }
   }

@@ -24,6 +24,7 @@
   },
   "lock": false,
   "imports": {
-    "@kt3k/cell": "jsr:@kt3k/cell@^0.7.7"
+    "@kt3k/cell": "jsr:@kt3k/cell@^0.7.7",
+    "@kt3k/ht": "jsr:@kt3k/ht@^0.1.2"
   }
 }

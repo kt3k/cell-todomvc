@@ -1,4 +1,5 @@
 import { type Context, register } from "@kt3k/cell"
+import * as ht from "@kt3k/ht"
 import { Todo, TodoCollection } from "./todo-models.ts"
 
 type Filter = "all" | "completed" | "uncompleted"
@@ -167,19 +168,18 @@ function TodoApp({ el, on, query }: Context) {
         : todos
       todoList.innerHTML = ""
       visibleItems.forEach((todo) => {
-        const li = document.createElement("li")
-        li.innerHTML = `
-        <div class="view">
-          <input class="toggle" type="checkbox" ${
-          todo.completed ? "checked" : ""
-        }/>
-          <label>${todo.title}</label>
-          <button class="destroy"></button>
-        </div>
-        <input class="edit" type="text" />
-      `
-        li.id = todo.id
-        li.classList.add("todo")
+        const checked = todo.completed ? "checked" : ""
+        const li = ht.li(
+          { id: todo.id, class: "todo" },
+          `
+            <div class="view">
+              <input class="toggle" type="checkbox" ${checked}/>
+              <label>${todo.title}</label>
+              <button class="destroy"></button>
+            </div>
+            <input class="edit" type="text" />
+          `,
+        )
         li.classList.toggle("completed", todo.completed)
         todoList.appendChild(li)
       })
