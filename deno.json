@@ -22,5 +22,8 @@
       "semiColons": false
     }
   },
-  "lock": false
+  "lock": false,
+  "imports": {
+    "@kt3k/cell": "jsr:@kt3k/cell@^0.7.7"
+  }
 }

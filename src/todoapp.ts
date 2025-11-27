@@ -1,4 +1,4 @@
-import { type Context, register } from "jsr:@kt3k/cell"
+import { type Context, register } from "@kt3k/cell"
 import { Todo, TodoCollection } from "./todo-models.ts"
 
 type Filter = "all" | "completed" | "uncompleted"
